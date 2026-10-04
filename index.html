@@ -575,6 +575,9 @@
               <option value="all">All talent types</option>
               <option>Extreme</option>
               <option>Secret</option></select
+            ><select id="sortFilter" aria-label="Sort talents">
+              <option value="default">Default order</option>
+              <option value="az">A-Z</option></select
             ><button class="ghost" id="clearBtn">Clear</button>
           </div>
           <div class="statsbar" id="browseKpis"></div>
@@ -665,7 +668,8 @@
       }
       function renderBrowse() {
         const term = qs('#search').value.trim().toLowerCase(),
-          typ = qs('#typeFilter').value;
+          typ = qs('#typeFilter').value,
+          sort = qs('#sortFilter').value;
         const filtered = talents.filter((t) => {
           if (typ !== 'all' && t.type !== typ) return false;
           const hay = (
@@ -677,6 +681,9 @@
           ).toLowerCase();
           return !term || hay.includes(term);
         });
+        if (sort === 'az') {
+          filtered.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+        }
         qs('#talentGrid').innerHTML = filtered.length
           ? filtered.map(card).join('')
           : `<div class="empty">No talents match the current filters.</div>`;
@@ -788,11 +795,14 @@
       qsa('.nav button').forEach((b) =>
         b.addEventListener('click', () => switchSection(b.dataset.section)),
       );
-      ['#search', '#typeFilter'].forEach((s) => qs(s).addEventListener('input', renderBrowse));
+      ['#search', '#typeFilter', '#sortFilter'].forEach((s) =>
+        qs(s).addEventListener('input', renderBrowse),
+      );
       ['#statsSearch', '#statsType'].forEach((s) => qs(s).addEventListener('input', renderStats));
       qs('#clearBtn').addEventListener('click', () => {
         qs('#search').value = '';
         qs('#typeFilter').value = 'all';
+        qs('#sortFilter').value = 'default';
         renderBrowse();
       });
       qs('#clearCompare').addEventListener('click', () => {
