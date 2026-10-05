@@ -311,6 +311,7 @@
       }
       .table-wrap {
         overflow: auto;
+        max-height: 70vh;
         border: 1px solid var(--line);
         border-radius: 14px;
         background: #0e131c;
@@ -592,7 +593,10 @@
             /><select id="statsType">
               <option value="all">All</option>
               <option>Extreme</option>
-              <option>Secret</option>
+              <option>Secret</option></select
+            ><select id="statsSort" aria-label="Sort passive stats">
+              <option value="default">Default order</option>
+              <option value="az">A-Z</option>
             </select>
           </div>
           <div class="table-wrap">
@@ -696,7 +700,8 @@
       }
       function renderStats() {
         const term = qs('#statsSearch').value.trim().toLowerCase(),
-          typ = qs('#statsType').value;
+          typ = qs('#statsType').value,
+          sort = qs('#statsSort').value;
         const filtered = talents.filter((t) => {
           if (typ !== 'all' && t.type !== typ) return false;
           return (
@@ -706,6 +711,9 @@
               .includes(term)
           );
         });
+        if (sort === 'az') {
+          filtered.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+        }
         const headers = ['Talent', 'Type', ...D.statColumns];
         qs('#statHead').innerHTML = headers.map((h) => `<th>${h}</th>`).join('');
         qs('#statBody').innerHTML =
@@ -798,7 +806,9 @@
       ['#search', '#typeFilter', '#sortFilter'].forEach((s) =>
         qs(s).addEventListener('input', renderBrowse),
       );
-      ['#statsSearch', '#statsType'].forEach((s) => qs(s).addEventListener('input', renderStats));
+      ['#statsSearch', '#statsType', '#statsSort'].forEach((s) =>
+        qs(s).addEventListener('input', renderStats),
+      );
       qs('#clearBtn').addEventListener('click', () => {
         qs('#search').value = '';
         qs('#typeFilter').value = 'all';
